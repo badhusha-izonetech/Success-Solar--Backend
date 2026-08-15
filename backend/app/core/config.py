@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = ""
     POSTGRES_DB: str = "ssc_erp"
     POSTGRES_SCHEMA: str = "solar"
-    DATABASE_URL: str = ""
+    DATABASE_URL: str
 
     @field_validator("DATABASE_URL", mode="before")
     @classmethod

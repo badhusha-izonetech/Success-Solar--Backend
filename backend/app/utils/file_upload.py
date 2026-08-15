@@ -48,8 +48,9 @@ async def save_upload(
             detail=f"File exceeds {settings.MAX_FILE_SIZE_MB}MB limit.",
         )
 
-    ext = Path(file.filename or "file").suffix or ".bin"
-    filename = f"{uuid.uuid4().hex}{ext}"
+    from werkzeug.utils import secure_filename
+    safe_name = secure_filename(file.filename or "file")
+    filename = f"{uuid.uuid4().hex}_{safe_name}"
     dest_dir = _ensure_dir(_upload_dir() / subfolder)
     dest_path = dest_dir / filename
 

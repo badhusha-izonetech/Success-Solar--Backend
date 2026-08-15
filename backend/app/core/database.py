@@ -72,6 +72,9 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 # ── Schema bootstrap ──────────────────────────────────────────────────────────
 async def create_schema_if_not_exists() -> None:
     """Ensure the target schema exists before Alembic/app boot."""
+    import re
+    if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', settings.POSTGRES_SCHEMA):
+        raise ValueError(f"Invalid schema name: {settings.POSTGRES_SCHEMA}")
     async with engine.begin() as conn:
         await conn.execute(
             text(f"CREATE SCHEMA IF NOT EXISTS {settings.POSTGRES_SCHEMA}")
