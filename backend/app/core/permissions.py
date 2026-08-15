@@ -107,6 +107,10 @@ ROLE_PERMISSIONS: dict[str, Set[Permission]] = {
         Permission.CUSTOMERS_READ,
         Permission.NOTIFICATIONS_READ,
         Permission.DASHBOARD_MARKETING,
+        Permission.LEAVE_READ,
+        Permission.LEAVE_WRITE,
+        Permission.APPROVALS_READ,
+        Permission.APPROVALS_WRITE,
     },
 
     Designation.DIRECT_MARKETING: {
@@ -122,6 +126,10 @@ ROLE_PERMISSIONS: dict[str, Set[Permission]] = {
         Permission.FIELD_MOVEMENTS_WRITE,
         Permission.NOTIFICATIONS_READ,
         Permission.DASHBOARD_MARKETING,
+        Permission.LEAVE_READ,
+        Permission.LEAVE_WRITE,
+        Permission.APPROVALS_READ,
+        Permission.APPROVALS_WRITE,
     },
 
     Designation.SITE_VISITOR: {
@@ -129,6 +137,10 @@ ROLE_PERMISSIONS: dict[str, Set[Permission]] = {
         Permission.FIELD_MOVEMENTS_WRITE,
         Permission.PROJECTS_READ,
         Permission.NOTIFICATIONS_READ,
+        Permission.LEAVE_READ,
+        Permission.LEAVE_WRITE,
+        Permission.APPROVALS_READ,
+        Permission.APPROVALS_WRITE,
     },
 
     Designation.ACCOUNTANT: {
@@ -140,6 +152,10 @@ ROLE_PERMISSIONS: dict[str, Set[Permission]] = {
         Permission.REPORTS_READ,
         Permission.NOTIFICATIONS_READ,
         Permission.ACTIVITY_READ,
+        Permission.LEAVE_READ,
+        Permission.LEAVE_WRITE,
+        Permission.APPROVALS_READ,
+        Permission.APPROVALS_WRITE,
     },
 
     Designation.PROJECT_HEAD: {
@@ -152,6 +168,10 @@ ROLE_PERMISSIONS: dict[str, Set[Permission]] = {
         Permission.STOCK_READ,
         Permission.NOTIFICATIONS_READ,
         Permission.ACTIVITY_READ,
+        Permission.LEAVE_READ,
+        Permission.LEAVE_WRITE,
+        Permission.APPROVALS_READ,
+        Permission.APPROVALS_WRITE,
     },
 
     Designation.FIELD_TECHNICIAN: {
@@ -159,6 +179,10 @@ ROLE_PERMISSIONS: dict[str, Set[Permission]] = {
         Permission.FIELD_MOVEMENTS_WRITE,
         Permission.PROJECTS_READ,
         Permission.NOTIFICATIONS_READ,
+        Permission.LEAVE_READ,
+        Permission.LEAVE_WRITE,
+        Permission.APPROVALS_READ,
+        Permission.APPROVALS_WRITE,
     },
 
     Designation.DOC_FOLLOWUP: {
@@ -167,6 +191,10 @@ ROLE_PERMISSIONS: dict[str, Set[Permission]] = {
         Permission.FIELD_MOVEMENTS_READ_OWN,
         Permission.FIELD_MOVEMENTS_WRITE,
         Permission.NOTIFICATIONS_READ,
+        Permission.LEAVE_READ,
+        Permission.LEAVE_WRITE,
+        Permission.APPROVALS_READ,
+        Permission.APPROVALS_WRITE,
     },
 
     Designation.WAREHOUSE: {
@@ -175,6 +203,10 @@ ROLE_PERMISSIONS: dict[str, Set[Permission]] = {
         Permission.STOCK_MANAGE,
         Permission.PROJECTS_READ,
         Permission.NOTIFICATIONS_READ,
+        Permission.LEAVE_READ,
+        Permission.LEAVE_WRITE,
+        Permission.APPROVALS_READ,
+        Permission.APPROVALS_WRITE,
     },
 
     Designation.DRIVER: {
@@ -182,6 +214,10 @@ ROLE_PERMISSIONS: dict[str, Set[Permission]] = {
         Permission.FIELD_MOVEMENTS_WRITE,
         Permission.PROJECTS_READ,
         Permission.NOTIFICATIONS_READ,
+        Permission.LEAVE_READ,
+        Permission.LEAVE_WRITE,
+        Permission.APPROVALS_READ,
+        Permission.APPROVALS_WRITE,
     },
 
     Designation.PARTNER: {
@@ -189,6 +225,10 @@ ROLE_PERMISSIONS: dict[str, Set[Permission]] = {
         Permission.PAYMENTS_PROOF,
         Permission.PROJECTS_READ,
         Permission.NOTIFICATIONS_READ,
+        Permission.LEAVE_READ,
+        Permission.LEAVE_WRITE,
+        Permission.APPROVALS_READ,
+        Permission.APPROVALS_WRITE,
     },
 }
 

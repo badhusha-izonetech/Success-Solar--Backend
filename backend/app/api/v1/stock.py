@@ -4,16 +4,20 @@ Stock router — list, stock-in, reserve, issue, return.
 
 from typing import Optional
 from fastapi import APIRouter, Depends, Query
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.core.exceptions import NotFoundError
 from app.core.permissions import Permission, require_permissions
 from app.core.security import get_current_user
+from app.models.stock_item import StockItem
 from app.schemas.stock_item import (
     StockInRequest,
     StockIssueRequest,
     StockItemCreate,
     StockItemRead,
+    StockItemUpdate,
     StockReserveRequest,
     StockReturnRequest,
 )
@@ -44,6 +48,24 @@ async def create_item(
     _=Depends(require_permissions(Permission.STOCK_WRITE)),
 ):
     item = await stock_service.create_stock_item(db, payload)
+    return StockItemRead.from_orm_with_derived(item)
+
+
+@router.patch("/{item_id}", response_model=StockItemRead)
+async def update_item(
+    item_id: str,
+    payload: StockItemUpdate,
+    db: AsyncSession = Depends(get_db),
+    _=Depends(require_permissions(Permission.STOCK_WRITE)),
+):
+    result = await db.execute(select(StockItem).where(StockItem.id == item_id, StockItem.is_active == True))
+    item = result.scalar_one_or_none()
+    if not item:
+        raise NotFoundError("StockItem")
+    for field, value in payload.model_dump(exclude_none=True).items():
+        setattr(item, field, value)
+    db.add(item)
+    await db.flush()
     return StockItemRead.from_orm_with_derived(item)
 
 

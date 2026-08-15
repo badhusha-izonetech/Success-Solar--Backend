@@ -59,7 +59,7 @@ async def approve_leave(
 ) -> LeaveRequest:
     leave = await _get_leave(db, leave_id)
     leave.status = "Approved"
-    leave.ceo_remarks = payload.ceo_remarks
+    leave.ceo_remarks = payload.get_remarks()
     db.add(leave)
     if leave.approval_id:
         await _update_approval(db, leave.approval_id, "Approved", current_user)
@@ -71,7 +71,7 @@ async def reject_leave(
 ) -> LeaveRequest:
     leave = await _get_leave(db, leave_id)
     leave.status = "Rejected"
-    leave.ceo_remarks = payload.ceo_remarks
+    leave.ceo_remarks = payload.get_remarks()
     db.add(leave)
     if leave.approval_id:
         await _update_approval(db, leave.approval_id, "Rejected", current_user)

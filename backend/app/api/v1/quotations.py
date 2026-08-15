@@ -58,6 +58,20 @@ async def revise_quotation(
     return QuotationRead.model_validate(q)
 
 
+@router.patch("/{quotation_id}/status", response_model=QuotationRead)
+async def update_status(
+    quotation_id: str,
+    payload: QuotationStatusUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(require_permissions(Permission.QUOTATIONS_WRITE)),
+):
+    q = await quotation_service.get_quotation(db, quotation_id)
+    q.status = payload.status
+    db.add(q)
+    await db.flush()
+    return QuotationRead.model_validate(q)
+
+
 @router.get("/{quotation_id}/document", summary="Download quotation as PDF")
 async def download_document(
     quotation_id: str,

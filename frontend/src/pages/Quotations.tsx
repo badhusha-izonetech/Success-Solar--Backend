@@ -59,10 +59,12 @@ export default function Quotations() {
     setRevisionReason('')
   }
 
-  function sendToAccountant(_q: Quotation) {
-    // CEO can push an approved quotation straight to the Accountant stage,
-    // matching the CEO's own client → quotation → payment flow.
-    alert('Sent to Accountant for advance payment verification.')
+  async function sendToAccountant(q: Quotation) {
+    await apiClient(`/api/v1/quotations/${q.id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'Awaiting Advance' }),
+    })
+    await refetchQuotations()
   }
 
   const columns: Column<Quotation>[] = [

@@ -6,7 +6,7 @@ import { Bell, CircleDot } from 'lucide-react'
 export default function NotificationsPage() {
   const { data: items, mutate: refetchItems } = useApi<any[]>('/api/v1/notifications')
   
-  const unread = items?.filter((n) => !n.read).length || 0
+  const unread = items?.filter((n) => !n.isRead).length || 0
 
   async function markAllRead() {
     await apiClient('/api/v1/notifications/read-all', { method: 'PATCH' })
@@ -38,15 +38,15 @@ export default function NotificationsPage() {
         {items.map((n) => (
           <Card
             key={n.id}
-            className={`p-4 flex items-start gap-3 cursor-pointer ${!n.read ? 'border-sun/30' : ''}`}
-            onClick={() => { if (!n.read) markRead(n.id) }}
+            className={`p-4 flex items-start gap-3 cursor-pointer ${!n.isRead ? 'border-sun/30' : ''}`}
+            onClick={() => { if (!n.isRead) markRead(n.id) }}
           >
             <div className="mt-0.5 shrink-0">
-              {n.read ? <Bell size={16} className="text-text-dim" /> : <CircleDot size={16} className="text-sun" />}
+              {n.isRead ? <Bell size={16} className="text-text-dim" /> : <CircleDot size={16} className="text-sun" />}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <div className={`text-sm font-medium ${!n.read ? 'text-text' : 'text-text-dim'}`}>{n.title}</div>
+                <div className={`text-sm font-medium ${!n.isRead ? 'text-text' : 'text-text-dim'}`}>{n.title}</div>
                 <Pill status={n.priority} />
                 <span className="text-[10px] text-text-dim">{n.department}</span>
               </div>

@@ -30,7 +30,7 @@ A full-stack Enterprise Resource Planning (ERP) application for a solar business
    ```
 3. Install dependencies:
    ```bash
-   pip install -r requirements.txt
+   python -m venv venv
    ```
 4. Database Configuration:
    - Ensure your PostgreSQL server is running.

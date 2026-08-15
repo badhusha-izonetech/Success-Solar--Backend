@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useApi } from '../api/hooks'
-import type { Project, Employee } from '../types/models'
-import { Card, SectionHeading, Pill, PriorityDot } from '../components/shared/Primitives'
+import { apiClient } from '../api/client'
+import type { Project, Employee, ProjectStage } from '../types/models'
+import { Card, SectionHeading, Pill, PriorityDot, Modal, Field, inputCls } from '../components/shared/Primitives'
 import { DataTable, type Column } from '../components/shared/DataTable'
 import { StageArc } from '../components/shared/StageArc'
 import { formatINR, formatDate } from '../lib/utils'
@@ -13,8 +14,8 @@ export default function Projects() {
   const [status, setStatus] = useState('All Status')
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState<Project | null>(null)
-  
-  const { data: projects } = useApi<Project[]>('/api/v1/projects')
+
+  const { data: projects, mutate: refetchProjects } = useApi<Project[]>('/api/v1/projects')
   const { data: employees } = useApi<Employee[]>('/api/v1/employees')
 
   const filtered = useMemo(() => {
@@ -90,14 +91,52 @@ export default function Projects() {
         )}
       />
 
-      {selected && <ProjectDrawer project={selected} employees={employees} onClose={() => setSelected(null)} />}
+      {selected && (
+        <ProjectDrawer
+          project={selected}
+          employees={employees}
+          onClose={() => setSelected(null)}
+          onUpdated={async () => { await refetchProjects(); setSelected(null) }}
+        />
+      )}
     </div>
   )
 }
 
-function ProjectDrawer({ project, employees, onClose }: { project: Project; employees: Employee[]; onClose: () => void }) {
+function ProjectDrawer({ project, employees, onClose, onUpdated }: { project: Project; employees: Employee[]; onClose: () => void; onUpdated: () => void }) {
   const tech = employees.find((e) => e.id === project.assignedTechnicianId)
   const doc = employees.find((e) => e.id === project.assignedDocEmployeeId)
+
+  const STAGES: ProjectStage[] = ['Site Visit', 'Quotation', 'Advance Payment', 'Project Execution', 'Installation', 'Final Connection', 'Completed']
+  const fieldStaff = employees.filter((e) => ['Field Technician', 'Document Follow-up Executive', 'Project Head'].includes(e.designation))
+
+  const [showStage, setShowStage] = useState(false)
+  const [showAssign, setShowAssign] = useState(false)
+  const [nextStage, setNextStage] = useState<ProjectStage>('Quotation')
+  const [stageNote, setStageNote] = useState('')
+  const [techId, setTechId] = useState(project.assignedTechnicianId || '')
+  const [docId, setDocId] = useState(project.assignedDocEmployeeId || '')
+
+  async function submitStage(e: React.FormEvent) {
+    e.preventDefault()
+    await apiClient(`/api/v1/projects/${project.id}/stage`, {
+      method: 'PATCH',
+      body: JSON.stringify({ stage: nextStage, note: stageNote || undefined }),
+    })
+    onUpdated()
+  }
+
+  async function submitAssign(e: React.FormEvent) {
+    e.preventDefault()
+    await apiClient(`/api/v1/projects/${project.id}/assign`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        assignedTechnicianId: techId || null,
+        assignedDocEmployeeId: docId || null,
+      }),
+    })
+    onUpdated()
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
@@ -142,9 +181,54 @@ function ProjectDrawer({ project, employees, onClose }: { project: Project; empl
         </div>
 
         <div className="pt-2 border-t border-border text-[11px] text-text-dim">
-          Backend integration point: <code className="text-teal">GET /projects/{'{id}'}</code>, <code className="text-teal">PATCH /projects/{'{id}'}/stage</code>
+          <div className="flex gap-2 mb-3">
+            <button onClick={() => setShowStage(true)} className="text-xs font-medium px-3 py-1.5 rounded-lg bg-sun/10 text-sun border border-sun/30 hover:bg-sun/20 transition-colors">Advance Stage</button>
+            <button onClick={() => setShowAssign(true)} className="text-xs font-medium px-3 py-1.5 rounded-lg bg-panel-raised border border-border hover:bg-black/[0.03] transition-colors">Assign Team</button>
+          </div>
         </div>
       </div>
+
+      {showStage && (
+        <Modal title={`Advance Stage — ${project.projectCode}`} onClose={() => setShowStage(false)}>
+          <form onSubmit={submitStage} className="space-y-4">
+            <Field label="Move to Stage">
+              <select className={inputCls} value={nextStage} onChange={(e) => setNextStage(e.target.value as ProjectStage)}>
+                {STAGES.filter((s) => s !== project.currentStage).map((s) => <option key={s}>{s}</option>)}
+              </select>
+            </Field>
+            <Field label="Note (optional)">
+              <textarea className={inputCls} rows={2} value={stageNote} onChange={(e) => setStageNote(e.target.value)} placeholder="e.g. Advance payment verified, proceeding to execution" />
+            </Field>
+            <div className="flex justify-end gap-2 pt-1">
+              <button type="button" onClick={() => setShowStage(false)} className="text-xs text-text-dim px-3 py-2">Cancel</button>
+              <button type="submit" className="bg-sun text-ink text-xs font-semibold px-4 py-2 rounded-lg hover:bg-sun-deep transition-colors">Advance</button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {showAssign && (
+        <Modal title={`Assign Team — ${project.projectCode}`} onClose={() => setShowAssign(false)}>
+          <form onSubmit={submitAssign} className="space-y-4">
+            <Field label="Field Technician">
+              <select className={inputCls} value={techId} onChange={(e) => setTechId(e.target.value)}>
+                <option value="">— Not assigned —</option>
+                {fieldStaff.map((e) => <option key={e.id} value={e.id}>{e.name} — {e.designation}</option>)}
+              </select>
+            </Field>
+            <Field label="Document Follow-up">
+              <select className={inputCls} value={docId} onChange={(e) => setDocId(e.target.value)}>
+                <option value="">— Not assigned —</option>
+                {fieldStaff.map((e) => <option key={e.id} value={e.id}>{e.name} — {e.designation}</option>)}
+              </select>
+            </Field>
+            <div className="flex justify-end gap-2 pt-1">
+              <button type="button" onClick={() => setShowAssign(false)} className="text-xs text-text-dim px-3 py-2">Cancel</button>
+              <button type="submit" className="bg-sun text-ink text-xs font-semibold px-4 py-2 rounded-lg hover:bg-sun-deep transition-colors">Save Assignment</button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   )
 }

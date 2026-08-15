@@ -78,9 +78,11 @@ async def mark_read(db: AsyncSession, notification_id: str):
 async def mark_all_read(db: AsyncSession, current_user: Employee):
     from sqlalchemy import or_, update
     await db.execute(
-        select(Notification).where(
+        update(Notification)
+        .where(
             or_(Notification.recipient_id == current_user.id, Notification.department == current_user.department)
         )
+        .values(is_read=True)
     )
 
 

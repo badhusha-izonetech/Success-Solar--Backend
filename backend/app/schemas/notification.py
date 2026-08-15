@@ -35,7 +35,11 @@ class LeaveCreate(BaseModel):
 
 
 class LeaveDecision(BaseModel):
+    remarks: Optional[str] = None  # frontend sends 'remarks', mapped to ceo_remarks
     ceo_remarks: Optional[str] = None
+
+    def get_remarks(self) -> Optional[str]:
+        return self.ceo_remarks or self.remarks
 
 
 class LeaveRead(BaseModel):
