@@ -142,7 +142,13 @@ def register_exception_handlers(app: FastAPI) -> None:
     async def unhandled_exception_handler(request: Request, exc: Exception):
         import logging
         logging.getLogger("ssc").exception("Unhandled error: %s", exc)
+        origin = request.headers.get("origin", "")
+        cors_headers = {
+            "Access-Control-Allow-Origin": origin if origin else "*",
+            "Access-Control-Allow-Credentials": "true",
+        }
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=_error_envelope("Internal server error", "INTERNAL_ERROR"),
+            headers=cors_headers,
         )

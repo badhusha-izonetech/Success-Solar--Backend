@@ -24,7 +24,7 @@ export default function LeadInbox() {
   const { employee, portal } = useAuth()
   
   const { data: leads, mutate: refetchLeads } = useApi<Lead[]>('/api/v1/leads')
-  const { data: employees } = useApi<Employee[]>('/api/v1/employees')
+  const { data: employees } = useApi<Employee[]>(portal === 'CEO' ? '/api/v1/employees' : null)
   
   const [status, setStatus] = useState('All Status')
   const [showAdd, setShowAdd] = useState(false)
@@ -78,7 +78,7 @@ export default function LeadInbox() {
     setLostDetail('')
   }
   
-  if (!leads || !employees) return <div className="p-8 text-center text-text-dim text-sm">Loading inbox...</div>
+  if (!leads) return <div className="p-8 text-center text-text-dim text-sm">Loading inbox...</div>
 
   const columns: Column<Lead>[] = [
     { header: 'Customer', cell: (l) => (

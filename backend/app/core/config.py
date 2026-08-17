@@ -26,6 +26,13 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     DEBUG: bool = False
 
+    @field_validator("DEBUG", mode="before")
+    @classmethod
+    def coerce_debug(cls, v: object) -> bool:
+        if isinstance(v, bool):
+            return v
+        return str(v).lower() in ("1", "true", "yes", "on")
+
     # ── Security ───────────────────────────────────────────────────────────────
     SECRET_KEY: str = Field(..., min_length=32)
     ALGORITHM: str = "HS256"

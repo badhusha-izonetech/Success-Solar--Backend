@@ -29,6 +29,31 @@ function toSnake(o: any): any {
 }
 
 const TOKEN_KEY = 'ssc-erp-token-v2';
+const REFRESH_KEY = 'ssc-erp-refresh-v2';
+
+function clearSession() {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(REFRESH_KEY);
+  localStorage.removeItem('ssc-erp-employee-v2');
+  localStorage.removeItem('ssc-erp-portal-v2');
+  window.location.href = '/login';
+}
+
+async function tryRefresh(): Promise<string | null> {
+  const refreshToken = localStorage.getItem(REFRESH_KEY);
+  if (!refreshToken) return null;
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+  const res = await fetch(`${baseUrl}/api/v1/auth/refresh`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refresh_token: refreshToken }),
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  localStorage.setItem(TOKEN_KEY, data.access_token);
+  localStorage.setItem(REFRESH_KEY, data.refresh_token);
+  return data.access_token;
+}
 
 export async function apiClient<T>(
   endpoint: string,
@@ -44,7 +69,6 @@ export async function apiClient<T>(
   if (!(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
     if (options.body && typeof options.body === 'string') {
-      // Assuming JSON is passed as string, we parse, convert to snake, and stringify
       try {
         const parsed = JSON.parse(options.body);
         options.body = JSON.stringify(toSnake(parsed));
@@ -64,10 +88,30 @@ export async function apiClient<T>(
   });
 
   if (response.status === 401) {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem('ssc-erp-employee-v2');
-    localStorage.removeItem('ssc-erp-portal-v2');
-    window.location.href = '/login';
+    const newToken = await tryRefresh();
+    if (newToken) {
+      // Retry the original request with the new token
+      const retryHeaders = new Headers(options.headers || {});
+      retryHeaders.set('Authorization', `Bearer ${newToken}`);
+      if (!(options.body instanceof FormData)) {
+        retryHeaders.set('Content-Type', 'application/json');
+      }
+      const retryResponse = await fetch(`${baseUrl}${endpoint}`, { ...options, headers: retryHeaders });
+      if (retryResponse.status === 401) { clearSession(); throw new Error('Unauthorized'); }
+      if (!retryResponse.ok) {
+        const errorBody = await retryResponse.json().catch(() => ({}));
+        throw new Error(errorBody.detail || 'API request failed');
+      }
+      const text = await retryResponse.text();
+      if (!text) return null as unknown as T;
+      const json = JSON.parse(text);
+      const result = toCamel(json);
+      if (result && typeof result === 'object' && Array.isArray(result.items) && 'total' in result && 'page' in result) {
+        return result.items as unknown as T;
+      }
+      return result;
+    }
+    clearSession();
     throw new Error('Unauthorized');
   }
 

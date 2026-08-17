@@ -1,0 +1,1 @@
+C:\Users\kanda\AppData\Local\Programs\Python\Python312\python.exe: can't open file 'c:\\Users\\kanda\\Desktop\\solar\\Success-Solar--Backend\\backend\\test_quot.py': [Errno 2] No such file or directory

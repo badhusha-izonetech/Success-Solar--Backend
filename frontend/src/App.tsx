@@ -28,6 +28,7 @@ import FieldVisit from './pages/marketing/FieldVisit'
 
 function Home() {
   const { portal } = useAuth()
+  if (!portal) return null
   return portal === 'CEO' ? <Dashboard /> : <MarketingDashboard />
 }
 

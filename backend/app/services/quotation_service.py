@@ -19,6 +19,13 @@ from app.utils.quotation_totals import LineItemInput, compute_quotation_totals
 from decimal import Decimal
 
 
+async def _load_quotation(db: AsyncSession, quotation_id: str) -> Quotation:
+    result = await db.execute(
+        select(Quotation).options(selectinload(Quotation.line_items)).where(Quotation.id == quotation_id)
+    )
+    return result.scalar_one()
+
+
 def _map_line_inputs(items) -> List[LineItemInput]:
     return [
         LineItemInput(
@@ -94,7 +101,7 @@ async def create_quotation(
         db.add(line)
 
     await db.flush()
-    return quotation
+    return await _load_quotation(db, quotation.id)
 
 
 async def revise_quotation(
@@ -185,7 +192,7 @@ async def revise_quotation(
         db.add(line)
 
     await db.flush()
-    return new_quotation
+    return await _load_quotation(db, new_quotation.id)
 
 
 async def list_quotations(
