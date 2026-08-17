@@ -8,7 +8,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
 
 
 # ── Notification ──────────────────────────────────────────────────────────────
@@ -22,6 +22,11 @@ class NotificationRead(BaseModel):
     is_read: bool
     priority: str
     category: str
+
+    @computed_field
+    @property
+    def read(self) -> bool:
+        return self.is_read
 
     model_config = {"from_attributes": True}
 
