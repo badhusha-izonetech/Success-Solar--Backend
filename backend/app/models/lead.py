@@ -44,9 +44,9 @@ class Lead(UUIDMixin, TimestampMixin, SoftDeleteMixin, Base):
     # ── Lead metadata ─────────────────────────────────────────────────────────
     lead_source: Mapped[str] = mapped_column(
         SAEnum(
-            "Referral", "Walk-in", "Online Inquiry", "Social Media",
-            "Advertisement", "Cold Call", "Exhibition", "Partner",
-            "Government Scheme", "Previous Customer", "Other",
+            "Previous Customer", "Referral", "Inquiry Call", "Walk-in",
+            "Justdial", "IndiaMART", "Google Search", "BNI",
+            "Direct Field Visit", "New Construction", "Commercial Building", "Other",
             name="lead_source_enum", schema=settings.POSTGRES_SCHEMA,
         ),
         nullable=False,
@@ -90,9 +90,9 @@ class Lead(UUIDMixin, TimestampMixin, SoftDeleteMixin, Base):
 
     lost_reason: Mapped[str | None] = mapped_column(
         SAEnum(
-            "Price Too High", "Went with Competitor", "Not Interested",
-            "Budget Issues", "No Response", "Project Cancelled",
-            "Technical Mismatch", "Other",
+            "Price", "Product Unavailable", "Company Cannot Provide Requirement",
+            "Customer Postponed", "Competitor", "Not Interested",
+            "Technical Infeasibility", "Other",
             name="lead_lost_reason_enum", schema=settings.POSTGRES_SCHEMA,
         ),
         nullable=True,
