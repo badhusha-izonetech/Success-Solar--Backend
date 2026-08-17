@@ -41,7 +41,7 @@ async def approve(
     approval = await _get(db, approval_id)
     approval.status = "Approved"
     approval.approved_by_id = current_user.id
-    approval.approved_at = datetime.now(timezone.utc)
+    approval.approved_at = datetime.now(timezone.utc).replace(tzinfo=None)
     db.add(approval)
     return approval
 
@@ -52,7 +52,7 @@ async def reject(
     approval = await _get(db, approval_id)
     approval.status = "Rejected"
     approval.approved_by_id = current_user.id
-    approval.approved_at = datetime.now(timezone.utc)
+    approval.approved_at = datetime.now(timezone.utc).replace(tzinfo=None)
     approval.rejection_reason = payload.rejection_reason
     db.add(approval)
     return approval

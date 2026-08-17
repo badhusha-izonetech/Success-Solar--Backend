@@ -76,7 +76,7 @@ async def verify_payment(
     payment.state = "Verified"
     payment.verified_by = current_user.name
     payment.verified_by_id = current_user.id
-    payment.verified_at = datetime.now(timezone.utc)
+    payment.verified_at = datetime.now(timezone.utc).replace(tzinfo=None)
     db.add(payment)
 
     # Update project advance_received
@@ -106,7 +106,7 @@ async def reject_payment(
     payment.remarks = payload.remarks
     payment.verified_by = current_user.name
     payment.verified_by_id = current_user.id
-    payment.verified_at = datetime.now(timezone.utc)
+    payment.verified_at = datetime.now(timezone.utc).replace(tzinfo=None)
     db.add(payment)
     await db.flush()
     return payment

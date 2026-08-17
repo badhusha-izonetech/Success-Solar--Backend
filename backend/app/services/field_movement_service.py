@@ -81,12 +81,12 @@ async def update_field_movement(
     if payload.status:
         fm.status = payload.status
         if payload.status == "Checked Out":
-            fm.end_time = datetime.now(timezone.utc)
+            fm.end_time = datetime.now(timezone.utc).replace(tzinfo=None)
 
     if payload.destination:
         fm.destination = payload.destination
 
-    fm.last_update = datetime.now(timezone.utc)
+    fm.last_update = datetime.now(timezone.utc).replace(tzinfo=None)
     db.add(fm)
     await db.flush()
     return fm

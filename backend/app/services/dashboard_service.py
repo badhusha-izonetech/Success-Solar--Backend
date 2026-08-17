@@ -8,7 +8,7 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import List
 
-from sqlalchemy import select, func, case
+from sqlalchemy import select, func, case, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.permissions import is_telecaller_scoped
@@ -66,7 +66,7 @@ async def get_ceo_dashboard(db: AsyncSession) -> CEODashboard:
 
     # This-month verified payments
     from datetime import datetime, timezone
-    now = datetime.now(timezone.utc)
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     vp = (await db.execute(
         select(func.sum(Payment.actual_amount)).where(
             Payment.state == "Verified",
@@ -182,11 +182,11 @@ async def get_reports(db: AsyncSession) -> ReportSummary:
     # Monthly verified collections
     monthly_res = await db.execute(
         select(
-            func.to_char(Payment.verified_at, "YYYY-MM").label("month"),
+            func.to_char(Payment.verified_at, text("'YYYY-MM'")).label("month"),
             func.sum(Payment.actual_amount).label("val"),
         ).where(Payment.state == "Verified", Payment.verified_at != None)
-        .group_by(func.to_char(Payment.verified_at, "YYYY-MM"))
-        .order_by(func.to_char(Payment.verified_at, "YYYY-MM"))
+        .group_by(text("month"))
+        .order_by(text("month"))
     )
     monthly = [ChartPoint(label=r.month, value=Decimal(str(r.val or 0))) for r in monthly_res]
 

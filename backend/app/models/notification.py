@@ -19,7 +19,7 @@ from app.models._mixins import UUIDMixin
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 class Notification(UUIDMixin, Base):

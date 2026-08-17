@@ -23,7 +23,7 @@ from datetime import datetime, timezone
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 class Project(UUIDMixin, TimestampMixin, SoftDeleteMixin, Base):

@@ -13,6 +13,7 @@ from app.core.exceptions import NotFoundError
 from app.models.approval import Approval
 from app.models.employee import Employee
 from app.models.leave_request import LeaveRequest
+from app.models.notification import Notification
 from app.schemas.notification import LeaveCreate, LeaveDecision
 from app.utils.date_utils import today_str
 
@@ -51,6 +52,17 @@ async def submit_leave(
 
     approval.entity_id = leave.id
     db.add(approval)
+    
+    # Notify CEO
+    notif = Notification(
+        title="New Leave Request",
+        message=f"{current_user.name} has applied for {payload.leave_type} leave.",
+        department="CEO",
+        category="Leave",
+        priority="Medium"
+    )
+    db.add(notif)
+    
     return leave
 
 
@@ -63,6 +75,17 @@ async def approve_leave(
     db.add(leave)
     if leave.approval_id:
         await _update_approval(db, leave.approval_id, "Approved", current_user)
+        
+    # Notify employee
+    notif = Notification(
+        title="Leave Approved",
+        message=f"Your {leave.leave_type} leave request has been approved.",
+        recipient_id=leave.employee_id,
+        category="Leave",
+        priority="Medium"
+    )
+    db.add(notif)
+    
     return leave
 
 
@@ -75,6 +98,17 @@ async def reject_leave(
     db.add(leave)
     if leave.approval_id:
         await _update_approval(db, leave.approval_id, "Rejected", current_user)
+        
+    # Notify employee
+    notif = Notification(
+        title="Leave Rejected",
+        message=f"Your {leave.leave_type} leave request has been rejected.",
+        recipient_id=leave.employee_id,
+        category="Leave",
+        priority="Medium"
+    )
+    db.add(notif)
+    
     return leave
 
 
@@ -103,5 +137,5 @@ async def _update_approval(db: AsyncSession, approval_id: str, status: str, curr
     if approval:
         approval.status = status
         approval.approved_by_id = current_user.id
-        approval.approved_at = datetime.now(timezone.utc)
+        approval.approved_at = datetime.now(timezone.utc).replace(tzinfo=None)
         db.add(approval)
