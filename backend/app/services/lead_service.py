@@ -45,13 +45,13 @@ async def _get_lead(db: AsyncSession, lead_id: str) -> Lead:
 async def create_lead(
     db: AsyncSession, payload: LeadCreate, current_user: Employee
 ) -> Lead:
-    lead = Lead(
-        **payload.model_dump(),
-        created_by_id=current_user.id,
-        first_contact_date=payload.first_contact_date or today_str(),
-    )
-    if not lead.assigned_employee_id:
-        lead.assigned_employee_id = current_user.id
+    data = payload.model_dump()
+    data["created_by_id"] = current_user.id
+    if not data.get("first_contact_date"):
+        data["first_contact_date"] = today_str()
+    if not data.get("assigned_employee_id"):
+        data["assigned_employee_id"] = current_user.id
+    lead = Lead(**data)
     db.add(lead)
     await db.flush()
     return lead

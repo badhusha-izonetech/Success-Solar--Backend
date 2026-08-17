@@ -89,7 +89,7 @@ export default function LeadInbox() {
     ) },
     { header: 'Requirement', cell: (l) => <span className="text-text-dim">{l.productInterested}</span> },
     { header: 'Source', cell: (l) => l.leadSource },
-    { header: 'Assigned To', cell: (l) => employees.find((e) => e.id === l.assignedEmployeeId)?.name ?? '—' },
+    { header: 'Assigned To', cell: (l) => employees?.find((e) => e.id === l.assignedEmployeeId)?.name ?? '—' },
     { header: 'Priority', cell: (l) => <PriorityDot priority={l.priority} /> },
     { header: 'Status', cell: (l) => <Pill status={l.status} /> },
     { header: 'First Contact', cell: (l) => <span className="text-text-dim">{formatDate(l.firstContactDate)}</span> },

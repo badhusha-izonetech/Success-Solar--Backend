@@ -160,6 +160,58 @@ STOCK_ITEMS = [
 async def seed():
     await create_schema_if_not_exists()
 
+    # ── Fix enum values to match frontend ─────────────────────────────────────
+    async with engine.begin() as conn:
+        schema = settings.POSTGRES_SCHEMA
+
+        # Check if leads table exists already
+        result = await conn.execute(text(
+            "SELECT EXISTS (SELECT 1 FROM information_schema.tables "
+            f"WHERE table_schema = '{schema}' AND table_name = 'leads')"
+        ))
+        leads_table_exists = result.scalar()
+
+        if leads_table_exists:
+            # Table exists — safely add missing enum values via ALTER TYPE
+            lead_source_values = [
+                "Previous Customer", "Referral", "Inquiry Call", "Walk-in",
+                "Justdial", "IndiaMART", "Google Search", "BNI",
+                "Direct Field Visit", "New Construction", "Commercial Building", "Other"
+            ]
+            for val in lead_source_values:
+                await conn.execute(text(
+                    f"DO $$ BEGIN "
+                    f"ALTER TYPE {schema}.lead_source_enum ADD VALUE IF NOT EXISTS '{val}'; "
+                    f"EXCEPTION WHEN others THEN NULL; END $$;"
+                ))
+
+            lost_reason_values = [
+                "Price", "Product Unavailable", "Company Cannot Provide Requirement",
+                "Customer Postponed", "Competitor", "Not Interested",
+                "Technical Infeasibility", "Other"
+            ]
+            for val in lost_reason_values:
+                await conn.execute(text(
+                    f"DO $$ BEGIN "
+                    f"ALTER TYPE {schema}.lead_lost_reason_enum ADD VALUE IF NOT EXISTS '{val}'; "
+                    f"EXCEPTION WHEN others THEN NULL; END $$;"
+                ))
+            print("OK - Enum values patched (ALTER TYPE)")
+        else:
+            # Table doesn't exist yet — drop old enums so SQLAlchemy creates them fresh
+            for enum_name in ("lead_source_enum", "lead_lost_reason_enum"):
+                await conn.execute(text(
+                    f"DROP TYPE IF EXISTS {schema}.{enum_name} CASCADE"
+                ))
+            print("OK - Old enums dropped (will be recreated with correct values)")
+
+    # ── Create all tables ───────────────────────────────────────────────────────────────
+    import app.models  # noqa: ensure all models registered on Base.metadata
+    from app.core.database import Base
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    print("OK - Tables created/verified")
+
     async with AsyncSessionLocal() as db:
         # ── Departments ───────────────────────────────────────────────────────
         from app.models.department import Department
